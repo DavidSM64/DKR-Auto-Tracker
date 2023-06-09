@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<style>
+p {
+    word-wrap: break-word;
+}
+</style>
+<head>
+    <script src="map.js"></script>
+    <script src="autotracker.js"></script>
+</head>
+<body>
+    <h2>Save Data</h2>
+    <p id="saveData"></p>
+    <h2>Gold Balloons Data</h2>
+    <p id="goldBalloonsData"></p>
+    <h2>Map Data</h2>
+    <p id="mapData"></p>
+    <h2>Map</h2>
+    <p id="map"></p>
+
+    <script>
+        let callbacks = {
+            "connected": connected,
+            "disconnected": disconnected,
+            "reconnectFailed": reconnectFailed,
+            "saveDataUpdated": saveDataUpdated,
+            "goldBalloonsUpdated": goldBalloonsUpdated,
+            "mapUpdated": mapUpdated,
+        };
+        
+        let mapDrawer = new MapDrawer(500, 400);
+    
+        // You can also specify the port number as the second arg, but currently it will always be 4675.
+        let autoTracker = new DkrRandoAutoTracker(callbacks); 
+        
+        function connected(firstConnection) {
+            if(firstConnection) {
+                console.log("Connected!");
+                return;
+            }
+            console.log("Reconnected!");
+        }
+        
+        function disconnected() {
+            console.log("Disconnected!");
+        }
+        
+        function reconnectFailed() {
+            console.log("Connection Failed!");
+            autoTracker.stopInternalLoop()
+        }
+        
+        let lastFileIndex = -1;
+        function saveDataUpdated(saveData) {
+            document.getElementById('saveData').innerText = JSON.stringify(saveData);
+            if(lastFileIndex != saveData.fileIndex) {
+                mapDrawer.clear(); // Clear map if another file loaded.
+                lastFileIndex = saveData.fileIndex
+            }
+        }
+        
+        function goldBalloonsUpdated(goldBalloonsData) {
+            document.getElementById('goldBalloonsData').innerText = JSON.stringify(goldBalloonsData);
+        }
+        
+        function mapUpdated(mapData) {
+            document.getElementById('mapData').innerText = JSON.stringify(mapData);
+            mapDrawer.update(mapData)
+        }
+    </script>
+</body>
+</html>
